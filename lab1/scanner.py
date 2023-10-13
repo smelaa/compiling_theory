@@ -2,49 +2,40 @@ import ply.lex as lex
 
 reserved = ()
 
+reserved = {
+    'if': 'IF',
+    'else': 'ELSE',
+    'for': 'FOR',
+    'while': 'WHILE',
+    'break': 'BREAK',
+    'continue': 'CONTINUE',
+    'return': 'RETURN',
+    'eye': 'EYE',
+    'zeros': 'ZEROS',
+    'ones': 'ONES',
+    'print': 'PRINT'
+}
+
 tokens = [
-    # 'PLUS',
-    # 'MINUS',
-    # 'TIMES',
-    # 'DIVIDE',
     'DOTADD',
     'DOTSUB',
     'DOTMUL',
     'DOTDIV',
-    # 'ASSIGN',
     'ADDASSIGN',
     'SUBASSIGN',
     'MULASSIGN',
     'DIVASSIGN',
-    # 'LE',
-    # 'GE',
     'LT',
     'GT',
     'NEQ',
     'EQ',
-    # 'LPARENCIR',
-    # 'RPARENCIR',
-    # 'LPARENSQ',
-    # 'RPARENSQ',
-    # 'LBRACE',
-    # 'RBRACE',
     'ID',
     'INTNUM',
-    # 'RANGE',
-    # 'TRANSPOSE',
-    # 'COMMA',
-    # 'SEMICOLON',
     'FLOATNUM',
     'STRING',
     'COMMENT'
-]
+] + list(reserved.values())
 
-# t_PLUS = r'\+'
-# t_MINUS = r'-'
-# t_TIMES = r'\*'
-# t_DIVIDE = r'/'
-# t_LPAREN = r'\('
-# t_RPAREN = r'\)'
 t_DOTADD = r'\.\+'
 t_DOTSUB = r'\.-'
 t_DOTMUL = r'\.\*'
@@ -64,25 +55,31 @@ literals = "+-*/=<>()[]{}',;"
 
 def t_ID(t):
     r'[a-zA-Z_]\w*'
+    t.type = reserved.get(t.value,'ID') 
     return t
 
-def t_FLOATNUM(t): # zamieniając kolejność z t_INTNUM już nie działa -> do sprawdzenia
+
+def t_FLOATNUM(t):  # zamieniając kolejność z t_INTNUM już nie działa -> do sprawdzenia
     r'\d+\.\d+'
     t.value = float(t.value)
     return t
+
 
 def t_INTNUM(t):
     r'\d+'
     t.value = int(t.value)
     return t
 
+
 def t_STRING(t):
     r'".*"'
     return t
 
+
 def t_COMMENT(t):
     r'\#.*'
     pass
+
 
 def t_newline(t):
     r'\n+'
@@ -93,4 +90,5 @@ def t_error(t):
     print("line %d: illegal character '%s'" % (t.lineno, t.value[0]))
     t.lexer.skip(1)
 
-lexer=lex.lex()
+
+lexer = lex.lex()
