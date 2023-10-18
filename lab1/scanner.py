@@ -1,7 +1,5 @@
 import ply.lex as lex
 
-reserved = ()
-
 reserved = {
     'if': 'IF',
     'else': 'ELSE',
@@ -59,8 +57,8 @@ def t_ID(t):
     return t
 
 
-def t_FLOATNUM(t):  # zamieniając kolejność z t_INTNUM już nie działa -> do sprawdzenia
-    r'\d+\.\d+'
+def t_FLOATNUM(t):
+    r'(\d*\.\d+)|(\d+\.\d*)'
     t.value = float(t.value)
     return t
 
