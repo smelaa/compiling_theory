@@ -49,7 +49,7 @@ t_EQ = r'=='
 
 t_ignore = ' \t'
 
-literals = "+-*/=<>()[]{}',;"
+literals = "+-*/=<>()[]{}',;:"
 
 def t_ID(t):
     r'[a-zA-Z_]\w*'
