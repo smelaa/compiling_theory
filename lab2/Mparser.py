@@ -6,15 +6,12 @@ import ply.yacc as yacc
 tokens = scanner.tokens
 
 precedence = (
-    # to fill ...
-    ("nonassoc", 'IF'),
-    ("nonassoc", 'ELSE'),
-    ("nonassoc", 'EQ', 'NEQ', 'LT', 'GT', '<', '>'),
     ("left", '+', '-'),
     ("left", '*', '/'),
     ("left", 'DOTADD', 'DOTSUB'),
-    ("left", 'DOTMUL', 'DOTDIV')
-    # to fill ...
+    ("left", 'DOTMUL', 'DOTDIV'),
+    ("nonassoc", 'IFX'),
+    ("nonassoc", 'ELSE')
 )
 
 
@@ -30,7 +27,7 @@ def p_program(p):
 
 def p_program_instrucitons(p):
     """program_ins : PRINT value ';'
-                | assign
+                | assign ';'
                 | cond_instruction
                 | while_instruction
                 | for_instruction
@@ -42,18 +39,24 @@ def p_program_instrucitons(p):
 
 
 def p_value(p):
-    """value : value ',' value
-            | STRING
-            | ID
+    """value : operation ',' value
             | operation"""
 
 def p_assign(p):
-    """assign : ID assign_operator operation ';'"""
+    """assign : variable assign_operator operation"""
     if p[2] == "=" : p[0] = p[3]
     elif p[2] == "+=" : p[0] = p[0] + p[3]
     elif p[2] == "-=" : p[0] = p[0] - p[3]
     elif p[2] == "*=" : p[0] = p[0] * p[2]
     elif p[2] == "/=" : p[0] = p[0] / p[2]
+
+def p_variable(p):
+    """variable : ID
+                | ID '[' index ']'"""
+
+def p_index(p):
+    """index : INTNUM
+            | INTNUM ',' index"""
 
 def p_assign_operators(p):
     """assign_operator : '='
@@ -63,16 +66,16 @@ def p_assign_operators(p):
                 | DIVASSIGN"""
 
 def p_number_operations(p):
-    """operation : operation operator operation
+    """operation : unit_operation operator operation
                         | unit_operation"""
     if (len(p) == 2) : p[0] = p[1]
     elif p[2] == "+" : p[0] = p[1] + p[3]
     elif p[2] == "-" : p[0] = p[1] - p[3]
     elif p[2] == "*" : p[0] = p[1] * p[3]
     elif p[2] == "/" : p[0] = p[1] / p[3]
-    elif p[2] == ".+" : p[0] = p[1] / p[3]
-    elif p[2] == ".-" : p[0] = p[1] / p[3]
-    elif p[2] == ".*" : p[0] = p[1] / p[3]
+    elif p[2] == ".+" : p[0] = p[1] + p[3]
+    elif p[2] == ".-" : p[0] = p[1] - p[3]
+    elif p[2] == ".*" : p[0] = p[1] * p[3]
     elif p[2] == "./" : p[0] = p[1] / p[3]
 
 def p_operators(p):
@@ -94,30 +97,23 @@ def p_unit_operaions(p):
                         | FLOATNUM
                         | STRING
                         | fid '(' operation ')'
-                        | '[' matrix_1 ']'"""
+                        | '[' matrix ']'"""
 
 def p_fid(p):
     """fid : ZEROS
             | ONES
             | EYE"""
 
-def p_matrix_1(p):
-    """matrix_1 : '[' matrix_0 ']' ',' matrix_1
-                | '[' matrix_0 ']'"""
-
-def p_matrix_0(p):
-    """matrix_0 : operation ',' matrix_0
+def p_matrix(p):
+    """matrix : operation ',' matrix
                 | operation"""
 
 def p_cond_instruction(p):
-    """cond_instruction : IF '(' condition ')' program_ins
+    """cond_instruction : IF '(' condition ')' program_ins %prec IFX
                         | IF '(' condition ')' program_ins ELSE program_ins"""
 
 def p_condition(p):
-    """condition : operation comparison_operator operation
-                | operation comparison_operator ID
-                | ID comparison_operator operation
-                | ID comparison_operator ID"""
+    """condition : operation comparison_operator operation"""
     if p[2] == "==" : p[0] = p[1] == p[3]
     elif p[2] == "!=" : p[0] = p[1] != p[3]
     elif p[2] == "<" : p[0] = p[1] < p[3]
@@ -144,26 +140,6 @@ def p_range(p):
             | ID ':' INTNUM
             | INTNUM ':' ID
             | INTNUM ':' INTNUM"""
-
-# def p_instructions_opt_1(p):
-#     """instructions_opt : instructions """
-#
-#
-# def p_instructions_opt_2(p):
-#     """instructions_opt : """
-#
-#
-# def p_instructions_1(p):
-#     """instructions : instructions instruction """
-#
-#
-# def p_instructions_2(p):
-#     """instructions : instruction """
-
-
-# to finish the grammar
-# ....
-
 
 parser = yacc.yacc()
 
