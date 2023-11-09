@@ -11,7 +11,7 @@ E1 = [ [ 1, 2, 3],
        [ 7, 8, 9] ];
 
 res1 = 60.500;
-res2 = 60.;
+res2 = 60.-65.7;
 res3 = .500;
 res4 = 60.52E2;
 str = "Hello world"; str2 = "Good bye";

@@ -6,12 +6,12 @@ import ply.yacc as yacc
 tokens = scanner.tokens
 
 precedence = (
-    ("left", '+', '-'),
-    ("left", '*', '/'),
+    ("nonassoc", 'IFX'),
+    ("nonassoc", 'ELSE'),
     ("left", 'DOTADD', 'DOTSUB'),
     ("left", 'DOTMUL', 'DOTDIV'),
-    ("nonassoc", 'IFX'),
-    ("nonassoc", 'ELSE')
+    ("left", '+', '-'),
+    ("left", '*', '/')
 )
 
 
@@ -38,66 +38,138 @@ def p_program_instrucitons(p):
                 | COMMENT"""
 
 
-def p_value(p):
-    """value : operation ',' value
-            | operation"""
+def p_value(p): # TODO: zmienić wartości do drukowania
+    """value : all_operations ',' value
+            | all_operations"""
 
 def p_assign(p):
-    """assign : variable assign_operator operation"""
-    if p[2] == "=" : p[0] = p[3]
-    elif p[2] == "+=" : p[0] = p[0] + p[3]
-    elif p[2] == "-=" : p[0] = p[0] - p[3]
-    elif p[2] == "*=" : p[0] = p[0] * p[2]
-    elif p[2] == "/=" : p[0] = p[0] / p[2]
+    # """assign : variable assign_operator operation"""
+    # TODO: pozmieniać if-else
+    """assign : id_assign
+                | matrix_assign"""
+    if (len(p) == 4) : p[0] = p[3]
+    else : p[0] = p[1]
+    # if p[2] == "=" : p[0] = p[3]
+    # elif p[2] == "+=" : p[0] = p[0] + p[3]
+    # elif p[2] == "-=" : p[0] = p[0] - p[3]
+    # elif p[2] == "*=" : p[0] = p[0] * p[2]
+    # elif p[2] == "/=" : p[0] = p[0] / p[2]
 
-def p_variable(p):
-    """variable : ID
-                | ID '[' index ']'"""
+def p_id_assign(p):
+    """id_assign : ID '=' all_operations
+                | ID assign_operator operation"""
+
+def p_all_operations(p):
+    """all_operations : operation
+                    | STRING"""
+
+def p_matrix_assign(p):
+    """matrix_assign : ID '[' index ']' assign_operator operation
+                    | ID '[' index ']' '=' operation"""
+
+# def p_numeric_assign(p):
+    # """numeric_assign : variable numeric_assign_operator numeric_operation"""
+    # if p[2] == "=" : p[0] = p[3]
+    # elif p[2] == "+=" : p[0] = p[0] + p[3]
+    # elif p[2] == "-=" : p[0] = p[0] - p[3]
+    # elif p[2] == "*=" : p[0] = p[0] * p[2]
+    # elif p[2] == "/=" : p[0] = p[0] / p[2]
+
+
+# def p_variable(p):
+#     """variable : ID
+#                 | ID '[' index ']'"""
 
 def p_index(p):
     """index : INTNUM
             | INTNUM ',' index"""
 
-def p_assign_operators(p):
-    """assign_operator : '='
-                | ADDASSIGN
+def p_assign_operator(p):
+    """assign_operator : ADDASSIGN
                 | SUBASSIGN
                 | MULASSIGN
                 | DIVASSIGN"""
 
-def p_number_operations(p):
-    """operation : unit_operation operator operation
-                        | unit_operation"""
+# def p_assign_operators(p):
+#     """assign_operator : '='
+#                 | ADDASSIGN
+#                 | SUBASSIGN
+#                 | MULASSIGN
+#                 | DIVASSIGN"""
+
+def p_numeric_operations(p):
+    """numeric_operation : numeric_operation numeric_operator numeric_operation
+                            | '-' numeric_operation
+                            | '(' numeric_operation ')'
+                            | ID
+                            | INTNUM
+                            | FLOATNUM"""
     if (len(p) == 2) : p[0] = p[1]
+    # elif p[1] == '-' : p[0] = 0 - p[2]
     elif p[2] == "+" : p[0] = p[1] + p[3]
     elif p[2] == "-" : p[0] = p[1] - p[3]
     elif p[2] == "*" : p[0] = p[1] * p[3]
     elif p[2] == "/" : p[0] = p[1] / p[3]
-    elif p[2] == ".+" : p[0] = p[1] + p[3]
-    elif p[2] == ".-" : p[0] = p[1] - p[3]
-    elif p[2] == ".*" : p[0] = p[1] * p[3]
-    elif p[2] == "./" : p[0] = p[1] / p[3]
 
-def p_operators(p):
-    """operator : '+'
+
+def p_numeric_operator(p):
+    """numeric_operator : '+'
                 | '-'
                 | '*'
-                | '/'
-                | DOTADD
-                | DOTSUB
-                | DOTMUL
-                | DOTDIV"""
+                | '/'"""
 
-def p_unit_operaions(p):
-    """unit_operation : unit_operation "'"
-                        | '-' unit_operation
-                        | '(' operation ')'
+# def p_matrix_assign(p):
+#     """matrix_assign : variable '=' matrix_operation"""
+#     p[0] = p[3]
+
+def p_matrix_operation(p):
+    """matrix_operation : matrix_operation matrix_operator matrix_operation
+                        | matrix_operation "'"
+                        | '(' matrix_operation ')'
                         | ID
-                        | INTNUM
-                        | FLOATNUM
-                        | STRING
-                        | fid '(' operation ')'
+                        | fid '(' numeric_operation ')'
                         | '[' matrix ']'"""
+
+def p_matrix_operator(p):
+    """matrix_operator : DOTADD
+                     | DOTSUB
+                     | DOTMUL
+                     | DOTDIV"""
+
+def p_operation(p):
+    """operation : numeric_operation
+                | matrix_operation"""
+    p[0] = p[1]
+    # if (len(p) == 2) : p[0] = p[1]
+    # elif p[2] == "+" : p[0] = p[1] + p[3]
+    # elif p[2] == "-" : p[0] = p[1] - p[3]
+    # elif p[2] == "*" : p[0] = p[1] * p[3]
+    # elif p[2] == "/" : p[0] = p[1] / p[3]
+    # elif p[2] == ".+" : p[0] = p[1] + p[3]
+    # elif p[2] == ".-" : p[0] = p[1] - p[3]
+    # elif p[2] == ".*" : p[0] = p[1] * p[3]
+    # elif p[2] == "./" : p[0] = p[1] / p[3]
+
+# def p_operators(p):
+#     """operator : '+'
+#                 | '-'
+#                 | '*'
+#                 | '/'
+#                 | DOTADD
+#                 | DOTSUB
+#                 | DOTMUL
+#                 | DOTDIV"""
+
+# def p_unit_operaions(p):
+#     """unit_operation : unit_operation "'" -> matrix
+#                         | '-' unit_operation -> numeric
+#                         | '(' operation ')' -> numeric, matrix
+#                         | ID -> numeric, matrix
+#                         | INTNUM -> numeric
+#                         | FLOATNUM -> numeric
+#                         | STRING -> other
+#                         | fid '(' operation ')' -> matrix(numeric)
+#                         | '[' matrix ']' -> matrix"""
 
 def p_fid(p):
     """fid : ZEROS
@@ -136,10 +208,10 @@ def p_for_instruction(p):
     """for_instruction : FOR ID '=' range program_ins"""
 
 def p_range(p):
-    """range : ID ':' ID
-            | ID ':' INTNUM
-            | INTNUM ':' ID
-            | INTNUM ':' INTNUM"""
+    """range : numeric_operation ':' numeric_operation"""
 
 parser = yacc.yacc()
+
+
+#TODO : czy w () można dawać tez macierze i string
 
