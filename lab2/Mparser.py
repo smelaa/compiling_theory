@@ -10,6 +10,8 @@ precedence = (
     ("nonassoc", 'ELSE'),
     ("left", 'DOTADD', 'DOTSUB'),
     ("left", 'DOTMUL', 'DOTDIV'),
+    ("left", 'MATRIX_ADD'),
+    ("left", 'MATRIX_MUL'),
     ("left", '+', '-'),
     ("left", '*', '/')
 )
@@ -98,43 +100,61 @@ def p_assign_operator(p):
 #                 | DIVASSIGN"""
 
 def p_numeric_operations(p):
-    """numeric_operation : numeric_operation numeric_operator numeric_operation
+    """numeric_operation : numeric_operation '+' numeric_operation
+                            | numeric_operation '-' numeric_operation
+                            | numeric_operation '*' numeric_operation
+                            | numeric_operation '/' numeric_operation
                             | '-' numeric_operation
                             | '(' numeric_operation ')'
                             | ID
                             | INTNUM
                             | FLOATNUM"""
-    if (len(p) == 2) : p[0] = p[1]
+    # if (len(p) == 2) : p[0] = p[1]
     # elif p[1] == '-' : p[0] = 0 - p[2]
-    elif p[2] == "+" : p[0] = p[1] + p[3]
-    elif p[2] == "-" : p[0] = p[1] - p[3]
-    elif p[2] == "*" : p[0] = p[1] * p[3]
-    elif p[2] == "/" : p[0] = p[1] / p[3]
+    # elif p[2] == "+" : p[0] = p[1] + p[3]
+    # elif p[2] == "-" : p[0] = p[1] - p[3]
+    # elif p[2] == "*" : p[0] = p[1] * p[3]
+    # elif p[2] == "/" : p[0] = p[1] / p[3]
 
 
-def p_numeric_operator(p):
-    """numeric_operator : '+'
-                | '-'
-                | '*'
-                | '/'"""
+# def p_numeric_operator(p):
+#     """numeric_operator : '+'
+#                 | '-'
+#                 | '*'
+#                 | '/'"""
 
 # def p_matrix_assign(p):
 #     """matrix_assign : variable '=' matrix_operation"""
 #     p[0] = p[3]
 
 def p_matrix_operation(p):
-    """matrix_operation : matrix_operation matrix_operator matrix_operation
+    """matrix_operation : matrix_operation matrix_operator_mul matrix_operation %prec MATRIX_MUL
+                        | matrix_operation matrix_operator_add matrix_operation %prec MATRIX_ADD
                         | matrix_operation "'"
                         | '(' matrix_operation ')'
-                        | ID
+                        | ID matrix_operator_mul matrix_operation %prec MATRIX_MUL
+                        | matrix_operation matrix_operator_mul ID %prec MATRIX_MUL
+                        | ID matrix_operator_mul ID %prec MATRIX_MUL
+                        | ID matrix_operator_add matrix_operation %prec MATRIX_ADD
+                        | matrix_operation matrix_operator_add ID %prec MATRIX_ADD
+                        | ID matrix_operator_add ID %prec MATRIX_ADD
+                        | ID "'"
                         | fid '(' numeric_operation ')'
                         | '[' matrix ']'"""
 
-def p_matrix_operator(p):
-    """matrix_operator : DOTADD
-                     | DOTSUB
-                     | DOTMUL
-                     | DOTDIV"""
+def p_matrix_mul(p):
+    """matrix_operator_mul : DOTMUL
+        | DOTDIV"""
+
+def p_matrix_add(p):
+    """matrix_operator_add : DOTADD
+        | DOTSUB"""
+
+# def p_matrix_operator(p):
+#     """matrix_operator : DOTADD
+#                      | DOTSUB
+#                      | DOTMUL
+#                      | DOTDIV"""
 
 def p_operation(p):
     """operation : numeric_operation
