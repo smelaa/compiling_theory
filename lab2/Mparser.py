@@ -22,6 +22,7 @@ precedence = (
 def p_error(p):
     if p:
         print("Syntax error at line {0}: LexToken({1}, '{2}')".format(p.lineno, p.type, p.value))
+        exit()
     else:
         print("Unexpected end of input")
 
