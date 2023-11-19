@@ -1,5 +1,5 @@
 
-#TODO: wiele klas jes bardzo podobnych, pytanie czy można je połączyć czy takie rozróżnienie będzie potrzebne dalej
+#TODO: wiele klas jest bardzo podobnych, pytanie czy można je połączyć czy takie rozróżnienie będzie potrzebne dalej
 # (np. żeby sprawdzić czy coś jest rzeczywiście warunkiem zwracającym true/false a nie zwykłym obliczeniem
 
 #TODO: Czy można tak ręcznie wypisywać np. VECTOR lub RETURN czy powinno być to robbione jakoś inaczej
@@ -115,15 +115,6 @@ class Cond(Node): # podobne do BinaryExpr, pytanie czy nie będzie potrzbne pó�
         self.op = op
         self.left = left
         self.right = right
-# ...
-# fill out missing classes
-# ...
-
-class Error(Node):
-    def __init__(self):
-        pass
-
-
 
 def addToClass(cls):
 
@@ -284,12 +275,6 @@ class TreePrinter:
         print(self.op)
         self.left.printTree(indent + 1)
         self.right.printTree(indent + 1)
-
-
-    @addToClass(Error)
-    def printTree(self, indent=0):
-        pass
-        # fill in the body
 
 def print_indent(indent):
     for i in range(indent):
