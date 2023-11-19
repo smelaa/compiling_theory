@@ -17,8 +17,19 @@ res4 = 60.52E2;
 str = "Hello world"; str2 = "Good bye";
 res5 = 12e+13;
 res6 = -1.87e-3;
+a = 1 * 4 + 2 - 6 / 3;
+if (m==n) {
+    if (m >= n)
+        print res;
+    else {
+        print "Hello", (6 + 3) * 6;
+    }
+}
 
-if (m==n) { 
-    if (m >= n) 
+a = (1 + 3) + 4 * 5 / (5 - 3);
+
+if (m == n) {
+    if (m >= n)
         print res;
 }
+else print 5;

@@ -43,7 +43,7 @@ for i = 1:N
     print i, j;
 
 
-for i = 1:N {
+for i = 1:(N + 4 / 3) {
     if(i<=N/16)
         print i;
     else if(i<=N/8)
@@ -59,7 +59,3 @@ for i = 1:N {
   N = 100;
   M = 200;
 }
-
-
-
-

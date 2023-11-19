@@ -17,8 +17,8 @@ res4 = 60.52E2;
 str = "Hello world"; str2 = "Good bye";
 res5 = 12e+13;
 res6 = -1.87e-3;
-
-if (m==n) { 
-    if (m >= n) 
+a = 1 + 2 + 3;
+if (m==n) {
+    if (m >= n)
         print res;
 }
