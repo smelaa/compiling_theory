@@ -1,9 +1,3 @@
-
-#TODO: wiele klas jest bardzo podobnych, pytanie czy można je połączyć czy takie rozróżnienie będzie potrzebne dalej
-# (np. żeby sprawdzić czy coś jest rzeczywiście warunkiem zwracającym true/false a nie zwykłym obliczeniem
-
-#TODO: Czy można tak ręcznie wypisywać np. VECTOR lub RETURN czy powinno być to robbione jakoś inaczej
-
 from __future__ import print_function
 
 class Node(object):
@@ -28,7 +22,7 @@ class Variable(Node):
     def __init__(self, name):
         self.name = name
 
-class String(Node): # podobne do varaible
+class String(Node):
     def __init__(self, val):
         self.val = val
 
@@ -87,7 +81,7 @@ class Range(Node):
         self.start = start
         self.end = end
 
-class Print(Node): # bardzo podobne do Vector, tylko Vector wypisuje na ekran VECTOR, a print PRINT
+class Print(Node):
     def __init__(self, val):
         self.val = val
 
@@ -95,7 +89,7 @@ class KeyWords(Node):
     def __init__(self, key_word):
         self.key_word = key_word
 
-class Return(Node): # analogicznie jak z Vector i Return
+class Return(Node):
     def __init__(self, val):
         self.val = val
 
@@ -110,7 +104,7 @@ class If(Node):
         self.program = program
         self.else_program = else_program
 
-class Cond(Node): # podobne do BinaryExpr, pytanie czy nie będzie potrzbne później (tak jak pisałem na górze)
+class Cond(Node):
     def __init__(self, op, left, right):
         self.op = op
         self.left = left
@@ -137,20 +131,17 @@ class TreePrinter:
 
     @addToClass(IntNum)
     def printTree(self, indent=0):
-        for i in range(indent):
-            print("|\t", end="")
+        print_indent(indent)
         print(self.val)
 
     @addToClass(FloatNum)
     def printTree(self, indent=0):
-        for i in range(indent):
-            print("|\t", end="")
+        print_indent(indent)
         print(self.val)
 
     @addToClass(Variable)
     def printTree(self, indent=0):
-        for i in range(indent):
-            print("|\t", end="")
+        print_indent(indent)
         print(self.name)
 
     @addToClass(String)
@@ -160,31 +151,27 @@ class TreePrinter:
 
     @addToClass(BinExpr)
     def printTree(self, indent = 0):
-        for i in range(indent):
-            print("|\t", end="")
+        print_indent(indent)
         print(self.op)
         self.left.printTree(indent + 1)
         self.right.printTree(indent + 1)
 
     @addToClass(Assign)
     def printTree(self, indent = 0):
-        for i in range(indent):
-            print("|\t", end="")
+        print_indent(indent)
         print(self.op)
         self.name.printTree(indent + 1)
         self.val.printTree(indent + 1)
 
     @addToClass(UnaryExpr)
     def printTree(self, indent = 0):
-        for i in range(indent):
-            print("|\t", end="")
+        print_indent(indent)
         print(self.op)
         self.val.printTree(indent + 1)
 
     @addToClass(Vector)
     def printTree(self, indent = 0):
-        for i in range(indent):
-            print("|\t", end="")
+        print_indent(indent)
         print("VECTOR")
         self.val.printTree(indent + 1)
 
@@ -196,8 +183,7 @@ class TreePrinter:
 
     @addToClass(RefAssign)
     def printTree(self, indent = 0):
-        for i in range(indent):
-            print("|\t", end="")
+        print_indent(indent)
         print(self.op)
         print("|\tREF")
         self.name.printTree(indent + 2)
@@ -211,8 +197,7 @@ class TreePrinter:
 
     @addToClass(Fid)
     def printTree(self, indent = 0):
-        for i in range(indent):
-            print("|\t", end="")
+        print_indent(indent)
         print(self.fid)
         self.val.printTree(indent + 1)
 

@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-#TODO: poukładać jakoś te if-elif w dłuższych instrukcjach i jeszcze to przepatrzeć
-
 from compiling_theory.lab1 import scanner
 from compiling_theory.lab3 import AST
 import ply.yacc as yacc
@@ -63,6 +61,7 @@ def p_assign(p):
 
 def p_id_assign(p):
     """id_assign : id '=' all_operations
+                | id '=' vector
                 | id assign_operator operation"""
     p[0] = AST.Assign(p[2], p[1], p[3])
 
@@ -89,7 +88,9 @@ def p_operation(p):
 def p_matrix_assign(p):
     """matrix_assign : id '[' multiple_index ']' '=' numeric_operation
                     | id '[' multiple_index ']' assign_operator numeric_operation
-                    | id '[' single_index ']' '=' vector"""
+                    | id '[' single_index ']' '=' vector
+                    | id '[' single_index ']' '=' numeric_operation
+                    | id '[' single_index ']' assign_operator numeric_operation"""
     p[0] = AST.RefAssign(p[5], p[1], p[3], p[6])
 
 def p_multiple_index(p):
