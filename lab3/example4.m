@@ -33,3 +33,8 @@ if (m == n) {
         print res;
 }
 else print 5;
+
+# niestety akceptuje też takie cuda
+x = [3,4,2];
+x = [[3232,434], [241], "Hello"];
+X[34, 52, 12] = [[74, [13442]], [4]];
