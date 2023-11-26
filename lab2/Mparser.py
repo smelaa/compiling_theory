@@ -9,11 +9,9 @@ tokens = scanner.tokens
 precedence = (
     ("nonassoc", 'IFX'),
     ("nonassoc", 'ELSE'),
-    ("left", 'MATRIX_ADD'),
-    ("left", 'MATRIX_MUL'),
-    ("nonassoc", "'"),
-    ("left", '+', '-'),
-    ("left", '*', '/'),
+    ("left", '+', '-', 'MATRIX_ADD'),
+    ("left", '*', '/', 'MATRIX_MUL'),
+    ("nonassoc", "'", 'UMINUS'),
 )
 
 
@@ -39,8 +37,7 @@ def p_program_instrucitons(p):
                 | '{' program '}'
                 | BREAK ';'
                 | CONTINUE ';'
-                | RETURN operation ';'
-                | COMMENT"""
+                | RETURN operation ';'"""
     if p[1] == "break" or p[1] == "continue" : p[0] = AST.KeyWords(p[1])
     elif len(p)==2 or len(p) == 3: p[0]=p[1]
     elif p[1] == "print": p[0] = AST.Print(p[2])
@@ -116,7 +113,7 @@ def p_numeric_operations(p):
                             | numeric_operation '-' numeric_operation
                             | numeric_operation '*' numeric_operation
                             | numeric_operation '/' numeric_operation
-                            | '-' numeric_operation
+                            | '-' numeric_operation %prec UMINUS
                             | '(' numeric_operation ')'
                             | id
                             | INTNUM

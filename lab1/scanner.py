@@ -31,6 +31,7 @@ tokens = [
     'INTNUM',
     'FLOATNUM',
     'STRING',
+    'UMINUS',
     'COMMENT'
 ] + list(reserved.values())
 
