@@ -3,10 +3,10 @@ from __future__ import print_function
 class Node(object):
     pass
 
-class Start(Node):
-    def __init__(self, p1, p2):
-        self.p1 = p1
-        self.p2 = p2
+class Instructions(Node):
+    def __init__(self, instructions):
+        super().__init__()
+        self.instructions = instructions
 
 class IntNum(Node):
     def __init__(self, val):
@@ -123,11 +123,11 @@ class TreePrinter:
     def printTree(self, indent=0):
         raise Exception("printTree not defined in class " + self.__class__.__name__)
 
-
-    @addToClass(Start)
+    @addToClass(Instructions)
     def printTree(self, indent=0):
-        self.p1.printTree(indent)
-        self.p2.printTree(indent)
+        print_indent(indent)
+        for instruction in self.instructions:
+            instruction.printTree(indent=indent)
 
     @addToClass(IntNum)
     def printTree(self, indent=0):

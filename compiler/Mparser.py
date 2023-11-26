@@ -16,7 +16,6 @@ precedence = (
     ("nonassoc", "'", "UMINUS"),
 )
 
-
 def p_error(p):
     if p:
         print("Syntax error at line {0}: LexToken({1}, '{2}')".format(p.lineno, p.type, p.value))
@@ -25,13 +24,29 @@ def p_error(p):
         print("Unexpected end of input")
 
 def p_program(p):
-    """program : program_ins program
-                | program_ins"""
-    if len(p) == 2 : p[0] = p[1]
-    else: p[0] = AST.Start(p[1], p[2])
+    """program : instructions_opt"""
+    p[0] = p[1]
 
-def p_program_instrucitons(p):
-    """program_ins : PRINT value ';'
+def p_instructions_opt(p):
+    """instructions_opt : instructions
+                        | empty"""
+    p[0] = AST.Instructions(p[1])
+
+def p_empty(p):
+    """empty :"""
+    p[0] = []
+
+
+def p_instructions(p):
+    """instructions : instructions program_ins
+                    | program_ins"""
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[2]]
+
+def p_program_ins(p):
+    """program_ins : PRINT print_value ';'
                 | assign ';'
                 | cond_instruction
                 | while_instruction
@@ -41,39 +56,23 @@ def p_program_instrucitons(p):
                 | CONTINUE ';'
                 | RETURN operation ';'
                 | COMMENT""" # jak dla mnie to to tu musi być, bo inaczej są błędy, na razie to tu zostawmy
-    if p[1] == "break" or p[1] == "continue" : p[0] = AST.KeyWords(p[1])
+    if p[1] == "break" or p[1] == "continue" : p[0] = AST.StatementList(AST.KeyWords(p[1]))
     elif len(p)==2 or len(p) == 3: p[0]=p[1]
     elif p[1] == "print": p[0] = AST.Print(p[2])
     elif p[1] == "return": p[0] = AST.Return(p[2])
     else: p[0] = p[2]
 
-def p_value(p):
-    """value : operation ',' value
+def p_print_value(p):
+    """print_value : operation ',' print_value
             | operation"""
     if len(p) == 4: p[0] = AST.Values(p[1], p[3])
     else: p[0] = AST.Values(p[1])
 
-# def p_assign(p):
-#     """assign : id_assign"""
-#     p[0] = p[1]
-#
-
 def p_assign(p):
     """assign : id assign_operator operation
                 | id '[' index ']' assign_operator operation"""
-                # | id '=' vector
-                # | id assign_operator operation"""
     if len(p) == 4 : p[0] = AST.Assign(p[2], p[1], p[3])
     else: p[0] = AST.RefAssign(p[5], p[1], p[3], p[6])
-
-# def p_all_operations(p):
-#     """all_operations : operation
-#                     | string"""
-#     p[0] = p[1]
-
-def p_string(p):
-    """string : STRING"""
-    p[0] = AST.String(p[1])
 
 def p_assign_operator(p):
     """assign_operator : ADDASSIGN
@@ -82,29 +81,12 @@ def p_assign_operator(p):
                 | DIVASSIGN
                 | '='"""
     p[0] = p[1]
-# def p_operation(p):
-#     """operation : numeric_operation
-#                 | matrix_operation"""
-#     p[0] = p[1]
-
-# def p_matrix_assign(p):
-#     """matrix_assign : id '[' multiple_index ']' '=' operation
-#                     | id '[' single_index ']' '=' operation"""
-                    # | id '[' multiple_index ']' assign_operator numeric_operation
-                    # | id '[' single_index ']' '=' vector
-                    # | id '[' single_index ']' '=' numeric_operation
-                    # | id '[' single_index ']' assign_operator numeric_operation"""
-    # p[0] = AST.RefAssign(p[5], p[1], p[3], p[6])
 
 def p_index(p):
     """index : INTNUM ',' index
             | INTNUM"""
     if len(p) == 4: p[0] = AST.Index(AST.IntNum(p[1]), p[3])
     else: p[0] = AST.Index(AST.IntNum(p[1]))
-
-# def p_single_index(p):
-#     """single_index : INTNUM"""
-#     p[0] = AST.IntNum(p[1])
 
 def p_vector(p):
     """vector : '[' vector_val ']'"""
@@ -116,11 +98,11 @@ def p_vector_val(p):
     if len(p) == 4 : p[0] = AST.Values(p[1], p[3])
     else: p[0] = AST.Values(p[1])
 
-def p_operations(p):
+def p_operation(p):
     """operation : operation add_operator operation %prec ADD
                 | operation mul_operator operation %prec MUL
                 | '-' operation %prec UMINUS
-                | operation "'"
+                | operation "'" 
                 | '(' operation ')'
                 | id
                 | INTNUM
@@ -128,15 +110,6 @@ def p_operations(p):
                 | fid '(' operation ')'
                 | vector
                 | string"""
-                            # numeric_operation '+' numeric_operation
-                            # | numeric_operation '-' numeric_operation
-                            # | numeric_operation '*' numeric_operation
-                            # | numeric_operation '/' numeric_operation
-                            # | '-' numeric_operation
-                            # | '(' numeric_operation ')'
-                            # | id
-                            # | INTNUM
-                            # | FLOATNUM"""
     if len(p) == 5: p[0] = AST.Fid(p[1], p[3])
     elif len(p) == 4 and p[1] != '(' : p[0] = AST.BinExpr(p[2], p[1], p[3])
     elif len(p) == 4 : p[0] = p[2]
@@ -146,36 +119,9 @@ def p_operations(p):
     elif isinstance(p[1], float): p[0] = AST.FloatNum(p[1])
     else: p[0] = p[1]
 
-# def p_matrix_operation(p):
-#     """matrix_operation : matrix_operation matrix_operator_mul matrix_operation %prec MATRIX_MUL
-#                         | matrix_operation matrix_operator_add matrix_operation %prec MATRIX_ADD
-#                         | matrix_operation "'"
-#                         | '(' matrix_operation ')'
-#                         | id_form
-#                         | fid '(' numeric_operation ')'
-#                         | '[' matrix ']'"""
-#     if len(p) == 5:
-#         p[0] = AST.UnaryExpr(p[1], p[3])
-#     elif len(p) == 4 and p[1] != '(' and p[1] != '[':
-#         p[0] = AST.BinExpr(p[2], p[1], p[3])
-#     elif len(p) == 4 and p[1] == '(':
-#         p[0] = p[2]
-#     elif len(p) == 4:
-#         p[0] = AST.Vector(p[2])
-#     elif len(p) == 3:
-#         p[0] = AST.UnaryExpr(p[2], p[1])
-#     else: p[0] = p[1]
-# def p_id_form(p):
-#     """id_form : id "'"
-#                 | id matrix_operator_mul matrix_operation %prec MATRIX_MUL
-#                 | matrix_operation matrix_operator_mul id %prec MATRIX_MUL
-#                 | id matrix_operator_mul id %prec MATRIX_MUL
-#                 | id matrix_operator_add matrix_operation %prec MATRIX_ADD
-#                 | matrix_operation matrix_operator_add id %prec MATRIX_ADD
-#                 | id matrix_operator_add id %prec MATRIX_ADD"""
-#     if len(p) == 4:
-#         p[0] = AST.BinExpr(p[2], p[1], p[3])
-#     else: p[0] = AST.UnaryExpr(p[2], p[1])
+def p_string(p):
+    """string : STRING"""
+    p[0] = AST.String(p[1])
 
 def p_mul_operator(p):
     """mul_operator : '*'
@@ -201,13 +147,6 @@ def p_fid(p):
             | EYE"""
     p[0] = p[1]
 
-# def p_matrix(p):
-#     """matrix : vector ',' matrix
-#                 | vector"""
-#     if len(p) == 4: p[0] = AST.Values(p[1], p[3])
-#     else: p[0] = AST.Values(p[1])
-
-
 def p_cond_instruction(p):
     """cond_instruction : IF '(' condition ')' program_ins %prec IFX
                         | IF '(' condition ')' program_ins ELSE program_ins"""
@@ -218,7 +157,7 @@ def p_condition(p):
     """condition : operation comparison_operator operation"""
     p[0] = AST.Cond(p[2], p[1], p[3])
 
-def p_comparison_operators(p):
+def p_comparison_operator(p):
     """comparison_operator : EQ
                             | NEQ
                             | LT
