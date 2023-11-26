@@ -60,9 +60,9 @@ class RefAssign(Node):
         self.val = val
 
 class Index(Node):
-    def __init__(self, index1, index2):
+    def __init__(self, index1, next = None):
         self.index1 = index1
-        self.index2 = index2
+        self.next = next
 
 class Fid(Node):
     def __init__(self, fid, val):
@@ -193,7 +193,8 @@ class TreePrinter:
     @addToClass(Index)
     def printTree(self, indent = 0):
         self.index1.printTree(indent)
-        self.index2.printTree(indent)
+        if self.next != None:
+            self.next.printTree(indent)
 
     @addToClass(Fid)
     def printTree(self, indent = 0):
