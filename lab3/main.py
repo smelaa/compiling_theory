@@ -3,8 +3,7 @@ import sys
 import os
 sys.path.append(os.getcwd()+"/..")
 import ply.yacc as yacc
-from compiling_theory.lab2 import Mparser
-from AST import TreePrinter
+from compiling_theory.compiler import Mparser
 
 
 if __name__ == '__main__':

@@ -1,7 +1,9 @@
 #!/usr/bin/python
 
-from compiling_theory.lab1 import scanner
-from compiling_theory.lab3 import AST
+import sys
+import os
+sys.path.append(os.getcwd()+"/..")
+from compiling_theory.compiler import scanner, AST
 import ply.yacc as yacc
 
 tokens = scanner.tokens
