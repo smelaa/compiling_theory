@@ -1,7 +1,8 @@
 from __future__ import print_function
 
 class Node(object):
-    pass
+    def __init__(self):
+        self.lineno = None
 
 class Instructions(Node):
     def __init__(self, instructions):
@@ -10,50 +11,59 @@ class Instructions(Node):
 
 class IntNum(Node):
     def __init__(self, val):
+        super().__init__()
         self.val = val
 
 class FloatNum(Node):
-
     def __init__(self, val):
+        super().__init__()
         self.val = val
 
 
 class Variable(Node):
     def __init__(self, name):
+        super().__init__()
         self.name = name
 
 class String(Node):
     def __init__(self, val):
+        super().__init__()
         self.val = val
 
 class BinExpr(Node):
     def __init__(self, op, left, right):
+        super().__init__()
         self.op = op
         self.left = left
         self.right = right
 
 class Assign(Node):
     def __init__(self, op, name, val):
+        super().__init__()
         self.op = op
         self.name = name
         self.val = val
 
 class UnaryExpr(Node):
     def __init__(self, op, val):
+        super().__init__()
         self.op = op
         self.val = val
 
 class Vector(Node):
     def __init__(self, val):
+        super().__init__()
         self.val = val
 
 class Values(Node):
     def __init__(self, val, next = None):
+        super().__init__()
         self.val = val
         self.next = next
 
 class RefAssign(Node):
     def __init__(self, op, name, index, val):
+        super().__init__()
         self.op = op
         self.name = name
         self.index = index
@@ -61,16 +71,19 @@ class RefAssign(Node):
 
 class Index(Node):
     def __init__(self, index1, next = None):
+        super().__init__()
         self.index1 = index1
         self.next = next
 
 class Fid(Node):
     def __init__(self, fid, val):
+        super().__init__()
         self.fid = fid
         self.val = val
 
 class For(Node):
     def __init__(self, op, variable, for_range, program):
+        super().__init__()
         self.op = op
         self.variable = variable
         self.for_range = for_range
@@ -78,34 +91,41 @@ class For(Node):
 
 class Range(Node):
     def __init__(self, start, end):
+        super().__init__()
         self.start = start
         self.end = end
 
 class Print(Node):
     def __init__(self, val):
+        super().__init__()
         self.val = val
 
 class KeyWords(Node):
     def __init__(self, key_word):
+        super().__init__()
         self.key_word = key_word
 
 class Return(Node):
     def __init__(self, val):
+        super().__init__()
         self.val = val
 
 class While(Node):
     def __init__(self, cond, program):
+        super().__init__()
         self.cond = cond
         self.program = program
 
 class If(Node):
     def __init__(self, cond, program, else_program = None):
+        super().__init__()
         self.cond = cond
         self.program = program
         self.else_program = else_program
 
 class Cond(Node):
     def __init__(self, op, left, right):
+        super().__init__()
         self.op = op
         self.left = left
         self.right = right
