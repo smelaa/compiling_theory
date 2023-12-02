@@ -1,8 +1,7 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/..")
-import Mparser
-from compiling_theory.lab1 import scanner
+from compiling_theory.compiler import Mparser, scanner
 
 if __name__ == '__main__':
 

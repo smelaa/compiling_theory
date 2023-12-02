@@ -1,8 +1,9 @@
 
 import sys
+import os
+sys.path.append(os.getcwd()+"/..")
 import ply.yacc as yacc
-from Mparser import Mparser
-from TreePrinter import TreePrinter
+from compiling_theory.compiler import Mparser
 from TypeChecker import TypeChecker
 
 if __name__ == '__main__':

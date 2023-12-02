@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-
-
 class NodeVisitor(object):
 
     def visit(self, node):
