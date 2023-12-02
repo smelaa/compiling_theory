@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from compiling_theory.AST import Node
+from compiling_theory.compiler.AST import Node
 
 class NodeVisitor(object):
 
@@ -115,12 +115,20 @@ class TypeChecker(NodeVisitor):
         },
     }
 
+    def visit_Instructions(self, node):
+        ins = node.instructions.accept(self)
+        print(ins)
+
     def visit_BinExpr(self, node): #TODO
                                           # alternative usage,
                                           # requires definition of accept method in class Node
         type1 = self.visit(node.left)     # type1 = node.left.accept(self) 
         type2 = self.visit(node.right)    # type2 = node.right.accept(self)
         op    = node.op
+
+        print(node.left)
+        print(node.right)
+        print(type1, type2)
 
         if type1 == 'matrix' and type2 !='matrix' or type1 !='matrix' and type2 =='matrix':
             self.print_error(node.lineno, f"Operations between {type1} and {type2} cannot be performed") 

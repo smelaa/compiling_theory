@@ -61,13 +61,18 @@ class Values(Node):
         self.val = val
         self.next = next
 
-class RefAssign(Node):
-    def __init__(self, op, name, index, val):
-        super().__init__()
-        self.op = op
+# class RefAssign(Node):
+#     def __init__(self, op, name, index, val):
+#         super().__init__()
+#         self.op = op
+#         self.name = name
+#         self.index = index
+#         self.val = val
+
+class RefVar(Node):
+    def __init__(self, name, index):
         self.name = name
         self.index = index
-        self.val = val
 
 class Index(Node):
     def __init__(self, index1, next = None):
@@ -201,14 +206,21 @@ class TreePrinter:
         if self.next != None:
             self.next.printTree(indent)
 
-    @addToClass(RefAssign)
-    def printTree(self, indent = 0):
+    # @addToClass(RefAssign)
+    # def printTree(self, indent = 0):
+    #     print_indent(indent)
+    #     print(self.op)
+    #     print("|\tREF")
+    #     self.name.printTree(indent + 2)
+    #     self.index.printTree(indent + 2)
+    #     self.val.printTree(indent + 1)
+
+    @addToClass(RefVar)
+    def printTree(self, indent=0):
         print_indent(indent)
-        print(self.op)
-        print("|\tREF")
-        self.name.printTree(indent + 2)
-        self.index.printTree(indent + 2)
-        self.val.printTree(indent + 1)
+        print("REF")
+        self.name.printTree(indent + 1)
+        self.index.printTree(indent + 1)
 
     @addToClass(Index)
     def printTree(self, indent = 0):

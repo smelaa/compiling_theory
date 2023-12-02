@@ -76,7 +76,7 @@ def p_assign(p):
     """program_ins : id assign_operator operation ';'
                 | id '[' index ']' assign_operator operation ';'"""
     if len(p) == 5 : p[0] = AST.Assign(p[2], p[1], p[3])
-    else: p[0] = AST.RefAssign(p[5], p[1], p[3], p[6])
+    else: p[0] = AST.Assign(p[5], AST.RefVar(p[1], p[3]), p[6])
     p[0].lineno = p.lineno(1)
 
 def p_assign_operator(p):
@@ -118,7 +118,7 @@ def p_bracket_operation(p):
 
 def p_negative(p):
     """operation : '-' operation %prec UMINUS """
-    p[0] = AST.UnaryExpr(p[2], p[1])
+    p[0] = AST.UnaryExpr(p[1], p[2])
     p[0].lineno = p.lineno(1)
 
 def p_transpose(p):
@@ -142,8 +142,10 @@ def p_float(p):
     p[0].lineno = p.lineno(1)
 
 def p_variable(p):
-    """operation : id"""
-    p[0] = p[1]
+    """operation : id
+                | id '[' index ']'"""
+    if len(p) == 2 : p[0] = p[1]
+    else: p[0] = AST.RefVar(p[1], p[3])
 
 def p_string(p):
     """operation : STRING"""
