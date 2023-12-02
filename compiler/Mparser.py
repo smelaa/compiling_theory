@@ -26,7 +26,6 @@ def p_error(p):
 def p_program(p):
     """program : instructions_opt"""
     p[0] = p[1]
-    p[0].lineno = p.lineno(1)
 
 def p_instructions_opt(p):
     """instructions_opt : instructions
@@ -37,8 +36,6 @@ def p_instructions_opt(p):
 def p_empty(p):
     """empty :"""
     p[0] = []
-    p[0].lineno = p.lineno(1)
-
 
 def p_instructions(p):
     """instructions : instructions program_ins
@@ -47,7 +44,6 @@ def p_instructions(p):
         p[0] = [p[1]]
     else:
         p[0] = p[1] + [p[2]]
-    p[0].lineno = p.lineno(1)
 
 def p_return(p):
     """program_ins : RETURN operation ';'"""
@@ -63,7 +59,6 @@ def p_keywords(p):
 def p_bracket_ins(p):
     """program_ins : '{' program '}'"""
     p[0] = p[2]
-    p[0].lineno = p.lineno(1)
 
 def p_print(p):
     """program_ins : PRINT print_value ';'"""
@@ -91,7 +86,6 @@ def p_assign_operator(p):
                 | DIVASSIGN
                 | '='"""
     p[0] = p[1]
-    p[0].lineno = p.lineno(1)
 
 def p_index(p):
     """index : INTNUM ',' index
@@ -121,7 +115,6 @@ def p_binary_operation(p):
 def p_bracket_operation(p):
     """operation : '(' operation ')' """
     p[0] = p[2]
-    p[0].lineno = p.lineno(1)
 
 def p_negative(p):
     """operation : '-' operation %prec UMINUS """
@@ -151,7 +144,6 @@ def p_float(p):
 def p_variable(p):
     """operation : id"""
     p[0] = p[1]
-    p[0].lineno = p.lineno(1)
 
 def p_string(p):
     """operation : STRING"""
@@ -164,7 +156,6 @@ def p_mul_operator(p):
                     | DOTMUL
                     | DOTDIV"""
     p[0] = p[1]
-    p[0].lineno = p.lineno(1)
 
 def p_add_operator(p):
     """add_operator : '+'
@@ -172,7 +163,6 @@ def p_add_operator(p):
                     | DOTADD
                     | DOTSUB"""
     p[0] = p[1]
-    p[0].lineno = p.lineno(1)
 
 def p_id(p):
     """id : ID"""
@@ -184,7 +174,6 @@ def p_fid(p):
             | ONES
             | EYE"""
     p[0] = p[1]
-    p[0].lineno = p.lineno(1)
 
 def p_cond_instruction(p):
     """program_ins : IF '(' condition ')' program_ins %prec IFX
@@ -206,7 +195,6 @@ def p_comparison_operator(p):
                             | '<'
                             | '>'"""
     p[0] = p[1]
-    p[0].lineno = p.lineno(1)
 
 def p_while_instruction(p):
     """program_ins : WHILE '(' condition ')' program_ins"""
