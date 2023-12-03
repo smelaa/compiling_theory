@@ -186,7 +186,7 @@ class TypeChecker(NodeVisitor):
                 self.print_error(node.lineno, f"{op} does not support matrix operations")
                 Symbol('', 'unknown')
             if val1.shape != val2.shape:
-                self.print_error(node.lineno, f"Matrix must be the same shape (got {val1.shape}, {val2.shape}")
+                self.print_error(node.lineno, f"Matrix must be the same shape (got {val1.shape}, {val2.shape})")
                 Symbol('', 'unknown')
             return Symbol('', self.ops_with_ret_type[op][(val1.type, val2.type)], val1.elem_type, val1.shape)
         elif (val1.type, val2.type) in self.ops_with_ret_type[op]:
@@ -223,7 +223,10 @@ class TypeChecker(NodeVisitor):
             type = expr.visit()
         else:
             val = self.visit(node.val)
-            curr = self.current_scope.get(node.name.name)
+            if isinstance(node.name, AST.RefVar):
+                curr = self.visit(node.name)
+            else:
+                curr = self.current_scope.get(node.name.name)
             if curr != None:
                 if curr.type != val.type and val.type != 'unknown':
                     self.print_error(node.lineno,
@@ -281,12 +284,42 @@ class TypeChecker(NodeVisitor):
         return Symbol('', 'vector', elem_type, shape)
 
     def visit_RefVar(self, node):
+        vector = self.current_scope.get(node.name.name)
+        if vector == None:
+            self.print_error(node.lineno, "Variable referenced before assignment")
+            return Symbol('', 'unknown')
+
+        index = self.visit(node.index)
+        if index.type == 'unknown':
+            return index
+        if len(vector.shape) < len(index.shape):
+            self.print_error(node.lineno, f"To many index (vector shape: {vector.shape}, index: {index.shape})")
+            return Symbol('', 'unknown')
+        for i in range(len(index.shape)):
+            if vector.shape[i] <= index.shape[i]:
+                self.print_error(node.lineno, f"Index out of range (vector shape: {vector.shape}, index: {index.shape})")
+                return Symbol('', 'unknown')
+        if len(vector.shape) == len(index.shape):
+            return Symbol('', vector.elem_type)
+        return Symbol('', 'vector', vector.elem_type, vector.shape[len(index.shape):])
         # zwróć ten typ jakiego typu jest macierz
         # sprawdź "Variable referenced before assignment"
-        pass
 
     def visit_Index(self, node):
-        pass
+        index = self.visit(node.index1)
+        if index.type != 'int':
+            self.print_error(node.lineno, f"Indexes must be int (got {index.type})")
+            return Symbol('', 'unknown')
+        if node.index1.val < 0:
+            self.print_error(node.lineno, f"Indexes cannot be negativ (got {node.index1.val})")
+            return Symbol('', 'unknown')
+        all_index = [node.index1.val]
+        if node.next != None:
+            next_index = self.visit(node.next)
+            if next_index.type == 'unknown':
+                return next_index
+            all_index += next_index.shape
+        return Symbol('', 'ref', None, all_index)
 
     def visit_Fid(self, node):
         type = self.visit(node.val).type

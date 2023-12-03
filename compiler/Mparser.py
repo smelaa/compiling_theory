@@ -144,6 +144,7 @@ def p_variable(p):
                 | id '[' index ']'"""
     if len(p) == 2 : p[0] = p[1]
     else: p[0] = AST.RefVar(p[1], p[3])
+    p[0].lineno = p.lexer.lineno
 
 def p_string(p):
     """operation : STRING"""
