@@ -1,14 +1,19 @@
 #!/usr/bin/python
 
 class Symbol:
-    pass
+    def __init__(self, name, type, elem_type = None, shape = None):
+        self.name = name
+        self.type = type
+        self.elem_type = elem_type
+        self.shape = shape
 
-
+#
 class VariableSymbol(Symbol):
 
     def __init__(self, name, type):
         self.name = name
         self.type = type
+
 
 
 class SymbolTable(object):
