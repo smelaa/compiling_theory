@@ -7,14 +7,6 @@ class Symbol:
         self.elem_type = elem_type
         self.shape = shape
 
-#
-class VariableSymbol(Symbol):
-
-    def __init__(self, name, type):
-        self.name = name
-        self.type = type
-
-
 
 class SymbolTable(object):
 

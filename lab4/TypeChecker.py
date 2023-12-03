@@ -1,6 +1,6 @@
 # !/usr/bin/python
 from compiling_theory.compiler import AST
-from compiling_theory.lab4.SymbolTable import SymbolTable, VariableSymbol, Symbol
+from compiling_theory.lab4.SymbolTable import SymbolTable, Symbol
 
 
 class NodeVisitor(object):
@@ -66,16 +66,16 @@ class TypeChecker(NodeVisitor):
             ('float', 'float'): 'float',
         },
         '.+': {
-            ('matrix', 'matrix'): 'matrix',
+            ('vector', 'vector'): 'vector',
         },
         '.-': {
-            ('matrix', 'matrix'): 'matrix',
+            ('vector', 'vector'): 'vector',
         },
         '.*': {
-            ('matrix', 'matrix'): 'matrix',
+            ('vector', 'vector'): 'vector',
         },
         './': {
-            ('matrix', 'matrix'): 'matrix',
+            ('vector', 'vector'): 'vector',
         },
         '>': {
             ('int', 'int'): 'boolean',
@@ -106,7 +106,7 @@ class TypeChecker(NodeVisitor):
             ('int', 'float'): 'boolean',
             ('float', 'int'): 'boolean',
             ('float', 'float'): 'boolean',
-            ('matrix', 'matrix'): 'boolean',
+            ('vector', 'vector'): 'boolean',
             ('str', 'str'): 'boolean',
         },
         '!=': {
@@ -114,7 +114,7 @@ class TypeChecker(NodeVisitor):
             ('int', 'float'): 'boolean',
             ('float', 'int'): 'boolean',
             ('float', 'float'): 'boolean',
-            ('matrix', 'matrix'): 'boolean',
+            ('vector', 'vector'): 'boolean',
             ('str', 'str'): 'boolean',
         },
     }
@@ -150,7 +150,7 @@ class TypeChecker(NodeVisitor):
             ('int', 'float'),
             ('float', 'int'),
             ('float', 'float'),
-            ('matrix', 'matrix'),
+            ('vector', 'vector'),
             ('str', 'str'),
         },
         '!=': {
@@ -158,7 +158,7 @@ class TypeChecker(NodeVisitor):
             ('int', 'float'),
             ('float', 'int'),
             ('float', 'float'),
-            ('matrix', 'matrix'),
+            ('vector', 'vector'),
             ('str', 'str'),
         },
     }
@@ -174,25 +174,28 @@ class TypeChecker(NodeVisitor):
     def visit_BinExpr(self, node):
         # alternative usage,
         # requires definition of accept method in class Node
-        type1 = self.visit(node.left)  # type1 = node.left.accept(self)
-        type2 = self.visit(node.right)  # type2 = node.right.accept(self)
+        val1 = self.visit(node.left)  # type1 = node.left.accept(self)
+        val2 = self.visit(node.right)  # type2 = node.right.accept(self)
         op = node.op
 
-        if type1 == 'matrix' and type2 != 'matrix' or type1 != 'matrix' and type2 == 'matrix':
-            self.print_error(node.lineno, f"Operations between {type1} and {type2} cannot be performed")
-            return 'unknown'
-        elif type1 == 'matrix' and type2 == 'matrix':
+        if val1.type == 'vector' and val2.type != 'vector' or val1.type != 'vector' and val2.type == 'vector':
+            self.print_error(node.lineno, f"Operations between {val1.type} and {val2.type} cannot be performed")
+            return Symbol('', 'unknown')
+        elif val1.type == 'vector' and val2.type == 'vector':
             if op not in self.matrix_ops:
                 self.print_error(node.lineno, f"{op} does not support matrix operations")
-                return 'unknown'
-            # TODO: sprawdz wymiary
-        elif (type1, type2) in self.ops_with_ret_type[op]:
+                Symbol('', 'unknown')
+            if val1.shape != val2.shape:
+                self.print_error(node.lineno, f"Matrix must be the same shape (got {val1.shape}, {val2.shape}")
+                Symbol('', 'unknown')
+            return Symbol('', self.ops_with_ret_type[op][(val1.type, val2.type)], val1.elem_type, val1.shape)
+        elif (val1.type, val2.type) in self.ops_with_ret_type[op]:
             if op not in self.scalar_ops:
                 self.print_error(node.lineno, f"{op} does not support scalar operations")
-                return 'unknown'
-            return self.ops_with_ret_type[op][(type1, type2)]
-        self.print_error(node.lineno, f"Cannot perform {op} on {(type1, type2)}, incompatible types")
-        return 'unknown'
+                return Symbol('', 'unknown')
+            return Symbol('', self.ops_with_ret_type[op][(val1.type, val2.type)])
+        self.print_error(node.lineno, f"Cannot perform {op} on {(val1.type, val2.type)}, incompatible types")
+        return Symbol('', 'unknown')
 
     def visit_IntNum(self, node):
         return Symbol('', 'int')
@@ -206,9 +209,9 @@ class TypeChecker(NodeVisitor):
         var = self.current_scope.get(name)
         if var is None:
             self.print_error(node.lineno, "Variable referenced before assignment")
-            return 'unknown'
+            return Symbol('', 'unknown')
 
-        return var.type
+        return var
 
     def visit_String(self, node):
         return Symbol('', str)
@@ -220,36 +223,35 @@ class TypeChecker(NodeVisitor):
             type = expr.visit()
         else:
             val = self.visit(node.val)
-            curr = self.current_scope.get(node.name.name) #namel?
+            curr = self.current_scope.get(node.name.name)
             if curr != None:
-                if curr.type != val.type:
+                if curr.type != val.type and val.type != 'unknown':
                     self.print_error(node.lineno,
                                      f"Variable types are static. Cannot assign {val.type} to variable of type {curr.type}")
-            else:
-                if isinstance(node.val, AST.RefVar):
-                    self.visit(node.val)
                 else:
+                    self.current_scope.put(node.name.name, val) # co jak to jest w parent_scope
+            else:
+                if val.type != 'unknown':
                     self.current_scope.put(node.name.name, val)
 
     def visit_UnaryExpr(self, node):
         if node.op == "'":
-            type = node.val.visit()
-            if type != 'matrix':
+            val = node.val.visit()
+            if val.type != 'vector':
                 self.print_error(node.lineno, f"Only matrices can be transposed")
-                return 'unknown'
+                return Symbol('', 'unknown')
             else:
-                return 'matrix'
+                return val
         else:  # node.op=='-'
-            type = node.val.visit()
-            if type != 'matrix' and type not in self.numeric_types:
+            val = node.val.visit()
+            if val.type != 'vector' and val.type not in self.numeric_types:
                 self.print_error(node.lineno, f"Only numeric types and matrices can be negated.")
-                return 'unknown'
+                return Symbol('', 'unknown')
             else:
-                return type
+                return val
 
     def visit_Vector(self, node):
-        val = self.visit(node.val)
-        return val
+        return self.visit(node.val)
 
     def visit_Values(self, node):
         val = self.visit(node.val)
@@ -259,7 +261,6 @@ class TypeChecker(NodeVisitor):
             shape = [1] + elem_shape
         else:
             elem_type = val.type
-            elem_shape = None
             shape = [1]
 
         if node.next != None:
@@ -276,10 +277,7 @@ class TypeChecker(NodeVisitor):
                 self.print_error(node.lineno, f"Wrong type ({next_val.elem_type}, {elem_type})")
                 return Symbol('', 'unknown')
 
-
             shape[0] += next_val.shape[0]
-        # if elem_shape != None:
-        #     shape += elem_shape
         return Symbol('', 'vector', elem_type, shape)
 
     def visit_RefVar(self, node):
@@ -291,26 +289,26 @@ class TypeChecker(NodeVisitor):
         pass
 
     def visit_Fid(self, node):
-        type = self.visit(node.val)
+        type = self.visit(node.val).type
         if type != 'int':
             self.print_error(node.lineno, f"Parameter of {node.fid} must be integer")
-            return 'unknown'
-        return None  # TODO: return 'matrix' i shape
+            return Symbol('', 'unknown')
+        return Symbol('', 'vector', 'int', [node.val.val, node.val.val])
 
     def visit_For(self, node):
         self.current_scope = self.current_scope.pushScope('for')
         self.visit(node.range)
-        symbol = VariableSymbol(node.variable.name, 'int')
+        symbol = Symbol(node.variable.name, 'int')
         self.current_scope.put(node.variable.name, symbol)
         self.visit(node.program)
         self.current_scope = self.current_scope.popScope()
 
     def visit_Range(self, node):
-        type1 = self.visit(node.start)
-        type2 = self.visit(node.end)
+        start = self.visit(node.start)
+        end = self.visit(node.end)
 
-        if type1 != 'int' or type2 != 'int':
-            self.print_error(node.lineno, f"Range operator accepts (int, int), got {(type1, type2)}")
+        if start.type != 'int' or end.type != 'int':
+            self.print_error(node.lineno, f"Range operator accepts (int, int), got {(start.type, end.type)}")
 
     def visit_Print(self, node):
         self.visit(node.val)
@@ -342,9 +340,9 @@ class TypeChecker(NodeVisitor):
             self.current_scope = self.current_scope.popScope()
 
     def visit_Cond(self, node):
-        type1 = self.visit(node.left)
-        type2 = self.visit(node.right)
+        val1 = self.visit(node.left)
+        val2 = self.visit(node.right)
         op = node.op
 
-        if not (type1, type2) in self.ops_cond[op]:
-            self.print_error(node.lineno, f"{op} does not support {(type1, type2)}")
+        if not (val1.type, val2.type) in self.ops_cond[op]:
+            self.print_error(node.lineno, f"{op} does not support {(val1.type, val2.type)}")
