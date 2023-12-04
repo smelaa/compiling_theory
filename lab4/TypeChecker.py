@@ -172,10 +172,8 @@ class TypeChecker(NodeVisitor):
             self.visit(elem)
 
     def visit_BinExpr(self, node):
-        # alternative usage,
-        # requires definition of accept method in class Node
-        val1 = self.visit(node.left)  # type1 = node.left.accept(self)
-        val2 = self.visit(node.right)  # type2 = node.right.accept(self)
+        val1 = self.visit(node.left)  
+        val2 = self.visit(node.right)  
         op = node.op
 
         if val1.type == 'vector' and val2.type != 'vector' or val1.type != 'vector' and val2.type == 'vector':
@@ -320,8 +318,6 @@ class TypeChecker(NodeVisitor):
         if len(vector.shape) == len(index.shape):
             return Symbol('', vector.elem_type)
         return Symbol('', 'vector', vector.elem_type, vector.shape[len(index.shape):])
-        # zwróć ten typ jakiego typu jest macierz
-        # sprawdź "Variable referenced before assignment"
 
     def visit_Index(self, node):
         index = self.visit(node.index1)
