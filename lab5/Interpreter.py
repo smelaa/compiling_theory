@@ -7,7 +7,6 @@ from compiling_theory.compiler import SymbolTable
 from Memory import *
 from Exceptions import  *
 from visit import *
-import sys
 
 sys.setrecursionlimit(10000)
 

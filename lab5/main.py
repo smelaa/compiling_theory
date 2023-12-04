@@ -4,7 +4,7 @@ import sys
 import os
 sys.path.append(os.getcwd()+"/..")
 import ply.yacc as yacc
-from compiling_theory.compiler.Mparser import Mparser
+#from compiling_theory.compiler.Mparser import Mparser
 from compiling_theory.compiler.AST import TreePrinter
 from compiling_theory.compiler.TypeChecker import TypeChecker
 from Interpreter import Interpreter
