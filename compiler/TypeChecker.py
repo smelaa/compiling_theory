@@ -1,6 +1,6 @@
 # !/usr/bin/python
 from compiling_theory.compiler import AST
-from compiling_theory.lab4.SymbolTable import SymbolTable, Symbol
+from compiling_theory.compiler.SymbolTable import SymbolTable, Symbol
 
 
 class NodeVisitor(object):
