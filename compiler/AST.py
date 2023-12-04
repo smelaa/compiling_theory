@@ -105,6 +105,12 @@ class Print(Node):
         super().__init__()
         self.val = val
 
+class PrintValues(Node):
+    def __init__(self, val, next = None):
+        super().__init__()
+        self.val = val
+        self.next = next
+
 class KeyWords(Node):
     def __init__(self, key_word):
         super().__init__()
@@ -201,6 +207,7 @@ class TreePrinter:
         self.val.printTree(indent + 1)
 
     @addToClass(Values)
+    @addToClass(PrintValues)
     def printTree(self, indent = 0):
         self.val.printTree(indent)
         if self.next != None:

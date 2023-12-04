@@ -188,7 +188,10 @@ class TypeChecker(NodeVisitor):
             if val1.shape != val2.shape:
                 self.print_error(node.lineno, f"Matrix must be the same shape (got {val1.shape}, {val2.shape})")
                 Symbol('', 'unknown')
-            return Symbol('', self.ops_with_ret_type[op][(val1.type, val2.type)], val1.elem_type, val1.shape)
+            elem_type = val1.elem_type
+            if node.op[1] == '/':
+                elem_type = 'float'
+            return Symbol('', self.ops_with_ret_type[op][(val1.type, val2.type)], elem_type, val1.shape)
         elif (val1.type, val2.type) in self.ops_with_ret_type[op]:
             if op not in self.scalar_ops:
                 self.print_error(node.lineno, f"{op} does not support scalar operations")
@@ -214,39 +217,50 @@ class TypeChecker(NodeVisitor):
         return var
 
     def visit_String(self, node):
-        return Symbol('', str)
+        return Symbol('', 'string')
 
     def visit_Assign(self, node):
-        type = None
         if node.op != '=':
             expr = AST.BinExpr(node.op[0], node.name, node.val)
-            type = expr.visit()
+            self.visit(AST.Assign('=', node.name, expr))
         else:
             val = self.visit(node.val)
+            if val.type == 'unknown':
+                return
+
             if isinstance(node.name, AST.RefVar):
                 curr = self.visit(node.name)
+                if curr.type == 'unknown':
+                    return
+                if curr.shape != val.shape:
+                    self.print_error(node.lineno, f"Wrong shape ({curr.shape}, {val.shape})")
+                if curr.elem_type != val.elem_type:
+                    self.print_error(node.lineno,
+                        f"Variable types are static. Cannot assign {val.type} to variable of type {curr.type}")
+                name = node.name.name.name
             else:
                 curr = self.current_scope.get(node.name.name)
+                name = node.name.name
             if curr != None:
-                if curr.type != val.type and val.type != 'unknown':
+                if curr.type != val.type:
                     self.print_error(node.lineno,
                                      f"Variable types are static. Cannot assign {val.type} to variable of type {curr.type}")
                 else:
-                    self.current_scope.put(node.name.name, val) # co jak to jest w parent_scope
+                    self.current_scope.put(name, val)
             else:
                 if val.type != 'unknown':
-                    self.current_scope.put(node.name.name, val)
+                    self.current_scope.put(name, val)
 
     def visit_UnaryExpr(self, node):
         if node.op == "'":
-            val = node.val.visit()
+            val = self.visit(node.val)
             if val.type != 'vector':
                 self.print_error(node.lineno, f"Only matrices can be transposed")
                 return Symbol('', 'unknown')
             else:
                 return val
         else:  # node.op=='-'
-            val = node.val.visit()
+            val = self.visit(node.val)
             if val.type != 'vector' and val.type not in self.numeric_types:
                 self.print_error(node.lineno, f"Only numeric types and matrices can be negated.")
                 return Symbol('', 'unknown')
@@ -263,6 +277,9 @@ class TypeChecker(NodeVisitor):
             elem_shape = val.shape
             shape = [1] + elem_shape
         else:
+            if val.type not in self.numeric_types:
+                self.print_error(node.lineno, f"Only numeric types can be vector element")
+                return Symbol('', 'unknown')
             elem_type = val.type
             shape = [1]
 
@@ -272,7 +289,7 @@ class TypeChecker(NodeVisitor):
             if next_val.type == 'unknown':
                 return next_val
 
-            if val.shape != None and next_val.shape!= None and val.shape != next_val.shape[1:]:
+            if val.shape != None and next_val.shape != None and val.shape != next_val.shape[1:]:
                 self.print_error(node.lineno, f"Wrong shape ({next_val.shape[1:]}, {val.shape})")
                 return Symbol('', 'unknown')
 
@@ -297,7 +314,8 @@ class TypeChecker(NodeVisitor):
             return Symbol('', 'unknown')
         for i in range(len(index.shape)):
             if vector.shape[i] <= index.shape[i]:
-                self.print_error(node.lineno, f"Index out of range (vector shape: {vector.shape}, index: {index.shape})")
+                self.print_error(node.lineno,
+                                 f"Index out of range (vector shape: {vector.shape}, index: {index.shape})")
                 return Symbol('', 'unknown')
         if len(vector.shape) == len(index.shape):
             return Symbol('', vector.elem_type)
@@ -346,9 +364,14 @@ class TypeChecker(NodeVisitor):
     def visit_Print(self, node):
         self.visit(node.val)
 
+    def visit_PrintValues(self, node):
+        self.visit(node.val)
+        if node.next != None:
+            self.visit(node.next)
+
     def visit_KeyWords(self, node):
         scope = self.current_scope
-        while scope and scope.scope_name not in ['while', 'for']:
+        while scope and scope.name not in ['while', 'for']:
             scope = scope.getParentScope()
         if scope is None:
             self.print_error(node.lineno, f"{node.key_word} out of loop scope")

@@ -68,15 +68,18 @@ def p_print(p):
 def p_print_value(p):
     """print_value : operation ',' print_value
             | operation"""
-    if len(p) == 4: p[0] = AST.Values(p[1], p[3])
-    else: p[0] = AST.Values(p[1])
+    if len(p) == 4: p[0] = AST.PrintValues(p[1], p[3])
+    else: p[0] = AST.PrintValues(p[1])
     p[0].lineno = p.lexer.lineno
 
 def p_assign(p):
     """program_ins : id assign_operator operation ';'
                 | id '[' index ']' assign_operator operation ';'"""
     if len(p) == 5 : p[0] = AST.Assign(p[2], p[1], p[3])
-    else: p[0] = AST.Assign(p[5], AST.RefVar(p[1], p[3]), p[6])
+    else:
+        ref = AST.RefVar(p[1], p[3])
+        ref.lineno = p.lexer.lineno
+        p[0] = AST.Assign(p[5], ref, p[6])
     p[0].lineno = p.lexer.lineno
 
 def p_assign_operator(p):
