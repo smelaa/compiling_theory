@@ -256,7 +256,7 @@ class TypeChecker(NodeVisitor):
                 self.print_error(node.lineno, f"Only matrices can be transposed")
                 return Symbol('', 'unknown')
             else:
-                return val
+                return Symbol('', 'vector', val.elem_type, reversed(val.shape))
         else:  # node.op=='-'
             val = self.visit(node.val)
             if val.type != 'vector' and val.type not in self.numeric_types:

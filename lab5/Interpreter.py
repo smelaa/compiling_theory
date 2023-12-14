@@ -68,6 +68,60 @@ class Interpreter(object):
     def visit(self, node):
         return node.val
 
+    @when(AST.UnaryExpr)
+    def visit(self, node):
+        val = self.visit(node.val)
+        if node.op == '-':
+            if isinstance(val, str) and self.memory.contains(val):
+                val = self.memory.get(val)
+            return - val
+        else:
+            #TODO transpozycja macierzy
+            return val
+
+    @when(AST.Vector)
+    def visit(self, node):
+        val = self.visit(node.val)
+        return val
+
+    @when(AST.Values)
+    def visit(self, node):
+        values = [self.visit(node.val)]
+        if node.next != None:
+            values += self.visit(node.next)
+        return values
+
+    # @when(AST.RefVar)
+    # def visit(self, node):
+    #     name = self.visit(node.name)
+    #     indexes = self.visit(node.index)
+    #     val = self.memory.get(name)
+    #     for i in range(len(indexes)):
+    #         val = val[indexes[i]]
+    #     return val
+
+    @when(AST.Index)
+    def visit(self, node):
+        indexes = [self.visit(node.index1)]
+        if node.next != None:
+            indexes += self.visit(node.next)
+        return indexes
+
+    @when(AST.Fid)
+    def visit(self, node):
+        val = self.visit(node.val)
+        if node.fid == 'zeros':
+            return [[0 for _ in range(val)] for _ in range(val)]
+        if node.fid == 'ones':
+            return [[1 for _ in range(val)] for _ in range(val)]
+        res = [[0 for _ in range(val)] for _ in range(val)]
+        for i in range(val):
+            res[i][i] = 1
+        return res
+
+
+
+
     # simplistic while loop interpretation
     @when(AST.While)
     def visit(self, node):
