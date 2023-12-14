@@ -172,7 +172,7 @@ class TypeChecker(NodeVisitor):
             self.visit(elem)
 
     def visit_BinExpr(self, node):
-        val1 = self.visit(node.left)  
+        val1 = self.visit(node.left)
         val2 = self.visit(node.right)  
         op = node.op
 
@@ -344,7 +344,7 @@ class TypeChecker(NodeVisitor):
 
     def visit_For(self, node):
         self.current_scope = self.current_scope.pushScope('for')
-        self.visit(node.range)
+        self.visit(node.for_range)
         symbol = Symbol(node.variable.name, 'int')
         self.current_scope.put(node.variable.name, symbol)
         self.visit(node.program)
