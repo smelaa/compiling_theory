@@ -147,7 +147,15 @@ class Interpreter(object):
         start, end = self.visit(node.for_range)
         for i in range(start, end):
             self.memory.set(var, i)
-            self.visit(node.program)
+            try:
+                self.visit(node.program)
+            except ReturnValueException:
+                self.memory.pop()
+                return # co należy zwrócić
+            except BreakException:
+                break
+            except ContinueException:
+                continue
         self.memory.pop()
 
     @when(AST.Range)
@@ -166,17 +174,37 @@ class Interpreter(object):
         if node.next != None:
             self.visit(node.next)
 
+    @when(AST.KeyWords)
+    def visit(self, node):
+        if node.key_word == 'break':
+            raise BreakException
+        else:
+            raise ContinueException
+
+    @when(AST.Return)
+    def visit(self, node):
+        exception = ReturnValueException(self.visit(node.val))
+        raise exception
+
     # simplistic while loop interpretation
     @when(AST.While)
     def visit(self, node):
         self.memory.push(Memory())
         while self.visit(node.cond): # Kuta coś tu zwraca, nie wiem po co
-            self.visit(node.program)
+            try:
+                self.visit(node.program)
+            except ReturnValueException:
+                self.memory.pop()
+                return # co należy zwrócić
+            except BreakException:
+                break
+            except ContinueException:
+                continue
         self.memory.pop()
 
     @when(AST.If)
     def visit(self, node):
-        self.memory.push(Memory)
+        self.memory.push(Memory())
         if self.visit(node.cond):
             self.visit(node.program)
         elif node.else_program != None:
@@ -196,5 +224,3 @@ class Interpreter(object):
             return left > right
         elif node.op == '>=':
             return left >= right
-
-
