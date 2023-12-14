@@ -9,3 +9,13 @@ B = [
 C = ones(5);
 B[0, 2] = 8;
 print c;
+
+for i = 1:10 {
+    d = i;
+}
+
+print "HELLO";
+
+c = 3.0;
+if (c > 5) print "tak";
+else print "NIE";
