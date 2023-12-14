@@ -44,13 +44,27 @@ class Interpreter(object):
 
     @when(AST.Assign)
     def visit(self, node):
-        name = self.visit(node.name)
         val = self.visit(node.val)
-        print(name, val)
-        if self.memory.contains(name):
+        if isinstance(node.name, AST.RefVar):
+            name = self.visit(node.name.name)
+            indexes = self.visit(node.name.index)
+            curr_val = self.memory.get(name)
+            curr_val = self.ref_assign(curr_val, indexes, val)
             self.memory.set(name, val)
+            print(name, val)
         else:
-            self.memory.insert(name, val)
+            name = self.visit(node.name)
+            print(name, val)
+            if self.memory.contains(name):
+                self.memory.set(name, val)
+            else:
+                self.memory.insert(name, val)
+
+    def ref_assign(self, curr_val, indexes, val):
+        if len(indexes) == 0:
+            return val
+        curr_val[indexes[0]] = self.ref_assign(curr_val[indexes[0]], indexes[1:], val)
+        return curr_val
 
     @when(AST.Variable)
     def visit(self, node):
@@ -91,14 +105,14 @@ class Interpreter(object):
             values += self.visit(node.next)
         return values
 
-    # @when(AST.RefVar)
-    # def visit(self, node):
-    #     name = self.visit(node.name)
-    #     indexes = self.visit(node.index)
-    #     val = self.memory.get(name)
-    #     for i in range(len(indexes)):
-    #         val = val[indexes[i]]
-    #     return val
+    @when(AST.RefVar)
+    def visit(self, node):
+        name = self.visit(node.name)
+        indexes = self.visit(node.index)
+        val = self.memory.get(name)
+        for i in range(len(indexes)):
+            val = val[indexes[i]]
+        return val
 
     @when(AST.Index)
     def visit(self, node):
