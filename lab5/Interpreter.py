@@ -149,9 +149,9 @@ class Interpreter(object):
             self.memory.set(var, i)
             try:
                 self.visit(node.program)
-            except ReturnValueException:
+            except ReturnValueException as e:
                 self.memory.pop()
-                return # co należy zwrócić
+                return e.value
             except BreakException:
                 break
             except ContinueException:
@@ -170,9 +170,11 @@ class Interpreter(object):
 
     @when(AST.PrintValues)
     def visit(self, node):
-        print(self.visit(node.val))
         if node.next != None:
+            print(self.visit(node.val), end="")
             self.visit(node.next)
+        else:
+            print(self.visit(node.val))
 
     @when(AST.KeyWords)
     def visit(self, node):
@@ -193,9 +195,9 @@ class Interpreter(object):
         while self.visit(node.cond): # Kuta coś tu zwraca, nie wiem po co
             try:
                 self.visit(node.program)
-            except ReturnValueException:
+            except ReturnValueException as e:
                 self.memory.pop()
-                return # co należy zwrócić
+                return e.value
             except BreakException:
                 break
             except ContinueException:
