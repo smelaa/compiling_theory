@@ -7,13 +7,33 @@ from compiling_theory.compiler import SymbolTable
 from Memory import *
 from Exceptions import  *
 from visit import *
+import operator
 
 sys.setrecursionlimit(10000)
 
 class Interpreter(object):
+    operator_mapping = {
+        '+': operator.add,
+        '-': operator.sub,
+        '*': operator.mul,
+        '/': operator.truediv,
+        '.+': operator.add,
+        '.-': operator.sub,
+        '.*': operator.mul,
+        './': operator.truediv,
+        '==': operator.eq,
+        '!=': operator.ne,
+        '>': operator.gt,
+        '<': operator.lt,
+        '>=': operator.ge,
+        '<=': operator.le,
+    }
 
     def __init__(self):
         self.memory =  MemoryStack()
+
+    def eval_expr(self, op, left, right):
+        return self.operator_mapping[op](left, right)
 
     @on('node')
     def visit(self, node):
@@ -26,25 +46,10 @@ class Interpreter(object):
 
     @when(AST.BinExpr)
     def visit(self, node):
+        
         r1 = self.visit(node.left)
         r2 = self.visit(node.right)
-        # if isinstance(r1, str) and self.memory.contains(r1): # TODO co jest deklaracja, ale nie ma wartości
-        #     r1 = self.memory.get(r1)
-        # if isinstance(r2, str) and self.memory.contains(r2):
-        #     r2 = self.memory.get(r2)
-
-        if node.op == '+': # TODO do zmiany, wersja prymitywna
-            return r1 + r2
-        elif node.op == '-':
-            return r1 - r2
-        elif node.op == '*':
-            return r1 * r2
-        elif node.op == '/':
-            return r1 / r2
-        # try sth smarter than:
-        # if(node.op=='+') return r1+r2
-        # elsif(node.op=='-') ...
-        # but do not use python eval
+        return self.operator_mapping[node.op](r1, r2)
 
     @when(AST.Assign)
     def visit(self, node):
@@ -55,11 +60,11 @@ class Interpreter(object):
             curr_val = self.visit(node.name.name)
             curr_val = self.ref_assign(curr_val, indexes, val)
             self.memory.set(name, curr_val)
-            # print(name, curr_val)
         else:
             name = node.name.name
-            # print(name, val)
             if self.memory.contains(name):
+                if not node.op=='=':
+                    val=self.eval_expr(node.op[0], self.memory.get(name), val)
                 self.memory.set(name, val)
             else:
                 self.memory.insert(name, val)
@@ -95,8 +100,15 @@ class Interpreter(object):
             if isinstance(val, str) and self.memory.contains(val):
                 val = self.memory.get(val)
             return - val
-        else:
-            #TODO transpozycja macierzy
+        else: #transposition
+            if isinstance(val, str) and self.memory.contains(val):
+                val = self.memory.get(val)
+            if not isinstance(val[0], list):
+                val=[val]
+            width=len(val[0])
+            height=len(val)
+            transposed=[[val[i][j] for i in range(height)] for j in range (width)]
+            val=transposed
             return val
 
     @when(AST.Vector)
@@ -192,7 +204,7 @@ class Interpreter(object):
     @when(AST.While)
     def visit(self, node):
         self.memory.push(Memory())
-        while self.visit(node.cond): # Kuta coś tu zwraca, nie wiem po co
+        while self.visit(node.cond): 
             try:
                 self.visit(node.program)
             except ReturnValueException as e:

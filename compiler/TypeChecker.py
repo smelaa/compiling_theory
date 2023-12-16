@@ -30,6 +30,7 @@ class NodeVisitor(object):
 
     def print_error(self, lineno, msg):
         print(f'Error on line {lineno}: {msg}')
+        exit(0)
 
 
 class TypeChecker(NodeVisitor):
@@ -43,7 +44,7 @@ class TypeChecker(NodeVisitor):
             ('int', 'float'): 'float',
             ('float', 'int'): 'float',
             ('float', 'float'): 'float',
-            ('str', 'str'): 'str',
+            ('string', 'string'): 'string',
         },
         '-': {
             ('int', 'int'): 'int',
@@ -56,8 +57,8 @@ class TypeChecker(NodeVisitor):
             ('int', 'float'): 'float',
             ('float', 'int'): 'float',
             ('float', 'float'): 'float',
-            ('str', 'int'): 'str',
-            ('int', 'str'): 'str'
+            ('string', 'int'): 'string',
+            ('int', 'string'): 'string'
         },
         '/': {
             ('int', 'int'): 'float',
@@ -107,7 +108,7 @@ class TypeChecker(NodeVisitor):
             ('float', 'int'): 'boolean',
             ('float', 'float'): 'boolean',
             ('vector', 'vector'): 'boolean',
-            ('str', 'str'): 'boolean',
+            ('string', 'string'): 'boolean',
         },
         '!=': {
             ('int', 'int'): 'boolean',
@@ -115,7 +116,7 @@ class TypeChecker(NodeVisitor):
             ('float', 'int'): 'boolean',
             ('float', 'float'): 'boolean',
             ('vector', 'vector'): 'boolean',
-            ('str', 'str'): 'boolean',
+            ('string', 'string'): 'boolean',
         },
     }
 
@@ -151,7 +152,7 @@ class TypeChecker(NodeVisitor):
             ('float', 'int'),
             ('float', 'float'),
             ('vector', 'vector'),
-            ('str', 'str'),
+            ('string', 'string'),
         },
         '!=': {
             ('int', 'int'),
@@ -159,7 +160,7 @@ class TypeChecker(NodeVisitor):
             ('float', 'int'),
             ('float', 'float'),
             ('vector', 'vector'),
-            ('str', 'str'),
+            ('string', 'string'),
         },
     }
 

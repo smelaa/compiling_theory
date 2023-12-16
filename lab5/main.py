@@ -1,5 +1,3 @@
-
-
 import sys
 import os
 sys.path.append(os.getcwd()+"/..")
@@ -13,7 +11,7 @@ from Interpreter import Interpreter
 if __name__ == '__main__':
 
     try:
-        filename = sys.argv[1] if len(sys.argv) > 1 else "examples/example.txt"
+        filename = sys.argv[1] if len(sys.argv) > 1 else "lab5/examples/primes.m.txt"
         file = open(filename, "r")
     except IOError:
         print("Cannot open {0} file".format(filename))
