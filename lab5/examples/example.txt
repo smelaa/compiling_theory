@@ -16,6 +16,8 @@ print A;
 print B;
 print C;
 
+print A';
+
 B[0, 2] = 8;
 
 print B;
