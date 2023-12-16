@@ -32,6 +32,9 @@ class Interpreter(object):
     def __init__(self):
         self.memory =  MemoryStack()
 
+    def eval_expr(self, op, left, right):
+        return self.operator_mapping[op](left, right)
+
     @on('node')
     def visit(self, node):
         pass
@@ -46,10 +49,6 @@ class Interpreter(object):
         
         r1 = self.visit(node.left)
         r2 = self.visit(node.right)
-        # if isinstance(r1, str) and self.memory.contains(r1): # TODO co jest deklaracja, ale nie ma wartości
-        #     r1 = self.memory.get(r1)
-        # if isinstance(r2, str) and self.memory.contains(r2):
-        #     r2 = self.memory.get(r2)
         return self.operator_mapping[node.op](r1, r2)
 
     @when(AST.Assign)
@@ -64,6 +63,8 @@ class Interpreter(object):
         else:
             name = node.name.name
             if self.memory.contains(name):
+                if not node.op=='=':
+                    val=self.eval_expr(node.op[0], self.memory.get(name), val)
                 self.memory.set(name, val)
             else:
                 self.memory.insert(name, val)
