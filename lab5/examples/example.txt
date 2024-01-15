@@ -32,3 +32,8 @@ print "HELLO";
 c = 3.0;
 if (c < 5) print "tak";
 else print "NIE";
+x = 5;
+
+A = [[1,2,3],[2,4,7],[1,4,0],[3,4,3]];
+print A;
+print A';

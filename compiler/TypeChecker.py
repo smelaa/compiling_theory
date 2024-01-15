@@ -4,7 +4,7 @@ from compiling_theory.compiler.SymbolTable import SymbolTable, Symbol
 
 
 class NodeVisitor(object):
-
+    error=False
     def visit(self, node):
         method = 'visit_' + node.__class__.__name__
         visitor = getattr(self, method, self.generic_visit)
@@ -30,7 +30,8 @@ class NodeVisitor(object):
 
     def print_error(self, lineno, msg):
         print(f'Error on line {lineno}: {msg}')
-        exit(0)
+        self.error=True
+        # exit(0)
 
 
 class TypeChecker(NodeVisitor):
@@ -171,6 +172,8 @@ class TypeChecker(NodeVisitor):
     def visit_Instructions(self, node):
         for elem in node.instructions:
             self.visit(elem)
+        if self.error and self.current_scope.name not in ["while", "for"]:
+            exit(0)
 
     def visit_BinExpr(self, node):
         val1 = self.visit(node.left)
@@ -236,19 +239,20 @@ class TypeChecker(NodeVisitor):
                 if curr.elem_type != val.elem_type:
                     self.print_error(node.lineno,
                         f"Variable types are static. Cannot assign {val.type} to variable of type {curr.type}")
-                name = node.name.name.name
+
+
             else:
                 curr = self.current_scope.get(node.name.name)
                 name = node.name.name
-            if curr != None:
-                if curr.type != val.type:
-                    self.print_error(node.lineno,
-                                     f"Variable types are static. Cannot assign {val.type} to variable of type {curr.type}")
+                if curr != None:
+                    if curr.type != val.type:
+                        self.print_error(node.lineno,
+                                         f"Variable types are static. Cannot assign {val.type} to variable of type {curr.type}")
+                    else:
+                        self.current_scope.put(name, val)
                 else:
-                    self.current_scope.put(name, val)
-            else:
-                if val.type != 'unknown':
-                    self.current_scope.put(name, val)
+                    if val.type != 'unknown':
+                        self.current_scope.put(name, val)
 
     def visit_UnaryExpr(self, node):
         if node.op == "'":
@@ -303,6 +307,10 @@ class TypeChecker(NodeVisitor):
         vector = self.current_scope.get(node.name.name)
         if vector == None:
             self.print_error(node.lineno, "Variable referenced before assignment")
+            return Symbol('', 'unknown')
+
+        if vector.type != 'vector':
+            self.print_error(node.lineno, f"Variable {node.name.name} is not vector (got {vector.type})")
             return Symbol('', 'unknown')
 
         index = self.visit(node.index)

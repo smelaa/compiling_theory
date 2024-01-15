@@ -8,8 +8,25 @@ from Memory import *
 from Exceptions import  *
 from visit import *
 import operator
+import numpy as np
 
 sys.setrecursionlimit(10000)
+
+def matadd(a, b):
+    c=np.array(a)+np.array(b)
+    return c.tolist()
+
+def matsub(a, b):
+    c=np.array(a)-np.array(b)
+    return c.tolist()
+
+def matmul(a, b):
+    c=np.array(a)*np.array(b)
+    return c.tolist()
+
+def matdiv(a, b):
+    c=np.array(a)/np.array(b)
+    return c.tolist()
 
 class Interpreter(object):
     operator_mapping = {
@@ -17,10 +34,10 @@ class Interpreter(object):
         '-': operator.sub,
         '*': operator.mul,
         '/': operator.truediv,
-        '.+': operator.add,
-        '.-': operator.sub,
-        '.*': operator.mul,
-        './': operator.truediv,
+        '.+': matadd,
+        '.-': matsub,
+        '.*': matmul,
+        './': matdiv,
         '==': operator.eq,
         '!=': operator.ne,
         '>': operator.gt,
@@ -125,9 +142,8 @@ class Interpreter(object):
 
     @when(AST.RefVar)
     def visit(self, node):
-        name = self.visit(node.name)
+        val = self.visit(node.name)
         indexes = self.visit(node.index)
-        val = self.memory.get(name)
         for i in range(len(indexes)):
             val = val[indexes[i]]
         return val
@@ -183,7 +199,7 @@ class Interpreter(object):
     @when(AST.PrintValues)
     def visit(self, node):
         if node.next != None:
-            print(self.visit(node.val), end="")
+            print(self.visit(node.val), end=" ")
             self.visit(node.next)
         else:
             print(self.visit(node.val))
