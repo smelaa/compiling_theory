@@ -11,7 +11,7 @@ class Memory:
 
     def get(self, name):         # gets from memory current value of variable <name>
         if self.has_key(name):
-            return self.values.get(name) #TODO co w przeciwnym przypadku
+            return self.values.get(name)
 
     def put(self, name, value):  # puts into memory current value of variable <name>
         self.values.update({name : value})

@@ -3,7 +3,6 @@ import sys
 import os
 sys.path.append(os.getcwd()+"/..")
 from compiling_theory.compiler import AST
-from compiling_theory.compiler import SymbolTable
 from Memory import *
 from Exceptions import  *
 from visit import *
@@ -235,10 +234,13 @@ class Interpreter(object):
     @when(AST.If)
     def visit(self, node):
         self.memory.push(Memory())
-        if self.visit(node.cond):
-            self.visit(node.program)
-        elif node.else_program != None:
-            self.visit(node.else_program)
+        try:
+            if self.visit(node.cond):
+                self.visit(node.program)
+            elif node.else_program != None:
+                self.visit(node.else_program)
+        finally:
+            self.memory.pop()
 
     @when(AST.Cond)
     def visit(self, node):
